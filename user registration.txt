@@ -1,0 +1,181 @@
+accept data from user using input fields firstName LastName age create username of User dynamically take 1st 2 characters from firstName take last 2 characters from lastName and age eg Amit Patil 30 === amil30 this rewuirement is done
+
+
+server.js
+
+
+const express = require('express'); // Import Express
+const bodyParser = require('body-parser'); // Import body-parser
+const app = express();
+const PORT = 3000;
+
+app.use(express.static('public')); // Serve static files
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// POST route to generate username
+app.post('/generate-username', (req, res) => {
+    const { firstName, lastName, age } = req.body;
+
+    // Server-side validation
+    if (!firstName || !lastName || !age) {
+        return res.json({ success: false, message: "All fields are required." });
+    }
+
+    if (firstName.length < 2 || lastName.length < 2) {
+        return res.json({ success: false, message: "FirstName and LastName must have at least 2 characters." });
+    }
+
+    // Generate username: first 2 letters of firstName + last 2 letters of lastName + age
+    const username = firstName.substring(0,2).toLowerCase() + lastName.slice(-2).toLowerCase() + age;
+
+    res.json({ success: true, username: username, message: `Username generated: ${username}` });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});
+
+
+index.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration & Username Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>User Registration & Username Generator</h2>
+        <form id="userForm">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required>
+
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" required>
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required>
+
+            <button type="submit">Generate Username</button>
+        </form>
+
+        <div id="response"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+style.css
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 350px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form input {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background: #0056b3;
+}
+
+#response {
+    margin-top: 15px;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#response.success { color: green; }
+#response.error { color: red; }
+
+
+script.js
+
+
+$(document).ready(function() {
+    $('#userForm').submit(function(e) {
+        e.preventDefault(); // Prevent page reload
+
+        const firstName = $('#firstName').val().trim();
+        const lastName = $('#lastName').val().trim();
+        const age = $('#age').val().trim();
+
+        // Client-side validation
+        if (firstName.length < 2) {
+            $('#response').text('First Name must have at least 2 characters').removeClass().addClass('error');
+            return;
+        }
+
+        if (lastName.length < 2) {
+            $('#response').text('Last Name must have at least 2 characters').removeClass().addClass('error');
+            return;
+        }
+
+        if (!age || age <= 0) {
+            $('#response').text('Enter a valid age').removeClass().addClass('error');
+            return;
+        }
+
+        // Send data to server using fetch API
+        fetch('/generate-username', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firstName, lastName, age })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#response').text(data.message).removeClass().addClass('success');
+                $('#userForm')[0].reset();
+            } else {
+                $('#response').text(data.message).removeClass().addClass('error');
+            }
+        })
+        .catch(error => {
+            $('#response').text('Server error').removeClass().addClass('error');
+            console.error(error);
+        });
+    });
+});
