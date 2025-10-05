@@ -1,0 +1,125 @@
+time and calculate
+
+calculate.html 
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculate</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <h1>Multiplication Table Generator</h1>
+
+  <!-- Input field -->
+  <input type="text" id="numberInput" placeholder="Enter a number">
+  <button onclick="generateTable()">Generate Table</button>
+
+  <!-- Error message -->
+  <p id="error" style="color:red;"></p>
+
+  <!-- Table output -->
+  <div id="tableOutput"></div>
+
+  <br>
+  <a href="index.html">⬅ Back to Home</a>
+</body>
+</html>
+
+
+
+index.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Home Page</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Heading -->
+  <h1>Welcome to Time & Calculate App</h1>
+
+  <!-- iFrame showing Date and Time -->
+  <h3>Current Date & Time:</h3>
+  <iframe src="/datetime" width="300" height="100"></iframe>
+
+  <br><br>
+
+  <!-- Hyperlink to Calculation Page -->
+  <a href="calculate.html">Go to Calculate Page</a>
+</body>
+</html>
+
+
+script.js
+
+
+// Function to validate input and generate multiplication table
+function generateTable() {
+  const input = document.getElementById("numberInput").value;
+  const error = document.getElementById("error");
+  const output = document.getElementById("tableOutput");
+
+  // Clear previous output
+  error.textContent = "";
+  output.innerHTML = "";
+
+  // Validation: check empty input
+  if (!input) {
+    error.textContent = "❌ Please enter a value.";
+    return;
+  }
+
+  // Validation: check if it's a number
+  if (isNaN(input)) {
+    error.textContent = "❌ Please enter a valid number.";
+    return;
+  }
+
+  // Convert input to number
+  const num = parseInt(input);
+
+  // Create a multiplication table
+  let tableHTML = "<table border='1' cellpadding='5'>";
+  for (let i = 1; i <= 10; i++) {
+    tableHTML += `<tr><td>${num} × ${i}</td><td>= ${num * i}</td></tr>`;
+  }
+  tableHTML += "</table>";
+
+  // Display table
+  output.innerHTML = tableHTML;
+}
+
+
+style.css
+
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f9f9f9;
+}
+
+h1 {
+  color: darkblue;
+}
+
+table {
+  margin-top: 15px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+td {
+  padding: 8px 12px;
+}
+
+
+
+
