@@ -1,0 +1,268 @@
+Q. Create a simple "Student Marks & Average Calculator" web application using the following technologies:
+
+✅ Requirements
+
+Use Node.js with Express to create a server and handle routes.
+
+On the homepage (index.html), create a form with:
+
+First Name
+
+Marks in 3 subjects (Maths, Science, English)
+
+Submit button
+
+Validate the form using JavaScript:
+
+First Name should not be empty.
+
+Marks must be numbers between 0–100.
+
+On submit, store the marks in an array and use the spread operator (...) to:
+
+Find the maximum and minimum marks.
+
+Calculate the average.
+
+Display the results dynamically on the same page (without reloading).
+
+Style the form and result display with CSS.
+
+
+server.js
+
+
+
+// server.js
+// Simple Express server to serve the static files from /public
+
+const express = require('express');
+const path = require('path');
+
+const app = express();
+const PORT = 3000;
+
+// Serve static files from "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Optional: serve index explicitly (not required but explicit)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+});
+
+
+
+index.html
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Marks & Average Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Heading -->
+  <h1>Student Marks Calculator</h1>
+
+  <!-- Form: note id attributes used by JavaScript -->
+  <form id="marksForm" novalidate>
+    <div class="field">
+      <label for="firstName">First Name:</label>
+      <input id="firstName" type="text" name="firstName" placeholder="Enter first name">
+    </div>
+
+    <div class="field">
+      <label for="maths">Maths:</label>
+      <input id="maths" type="text" name="maths" placeholder="0 - 100">
+    </div>
+
+    <div class="field">
+      <label for="science">Science:</label>
+      <input id="science" type="text" name="science" placeholder="0 - 100">
+    </div>
+
+    <div class="field">
+      <label for="english">English:</label>
+      <input id="english" type="text" name="english" placeholder="0 - 100">
+    </div>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <!-- Error area -->
+  <p id="error" class="error" aria-live="polite"></p>
+
+  <!-- Results area -->
+  <div id="results" class="results" aria-live="polite"></div>
+
+  <!-- Script loaded at the end so DOM elements exist -->
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+style.css   
+
+
+/* Simple styling */
+body {
+  font-family: Arial, sans-serif;
+  margin: 24px;
+  background: #f6f8fa;
+  color: #111;
+}
+
+h1 {
+  color: #0645ad;
+}
+
+form {
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  width: 320px;
+}
+
+.field {
+  margin-bottom: 10px;
+}
+
+label {
+  display: inline-block;
+  width: 100px;
+}
+
+input[type="text"] {
+  width: 180px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #0b5ed7;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #094aa8;
+}
+
+.error {
+  color: #b00020;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.results {
+  margin-top: 16px;
+  background: #e9f7ff;
+  padding: 12px;
+  border-radius: 6px;
+  width: 360px;
+}
+
+
+
+script.js
+
+
+
+
+// script.js
+// Attaches handlers after DOM loaded and calculates highest, lowest, average using spread operator.
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Debug log so you can confirm the script is loaded (open browser console)
+  console.log('script.js loaded');
+
+  const form = document.getElementById('marksForm');
+  const errorEl = document.getElementById('error');
+  const resultsEl = document.getElementById('results');
+
+  // Helper to escape HTML for safety
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[s]));
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault(); // prevent page reload
+
+    // Clear previous messages
+    errorEl.textContent = '';
+    resultsEl.innerHTML = '';
+
+    // Read and trim inputs
+    const firstName = document.getElementById('firstName').value.trim();
+    const mathsRaw = document.getElementById('maths').value.trim();
+    const scienceRaw = document.getElementById('science').value.trim();
+    const englishRaw = document.getElementById('english').value.trim();
+
+    // Basic validation
+    if (!firstName) {
+      errorEl.textContent = '❌ First Name cannot be empty';
+      console.warn('Validation failed: first name empty');
+      return;
+    }
+
+    if (mathsRaw === '' || scienceRaw === '' || englishRaw === '') {
+      errorEl.textContent = '❌ Please enter all three marks';
+      console.warn('Validation failed: missing mark(s)');
+      return;
+    }
+
+    // Convert to numbers
+    const maths = Number(mathsRaw);
+    const science = Number(scienceRaw);
+    const english = Number(englishRaw);
+
+    // Validate numeric and range
+    if ([maths, science, english].some(v => Number.isNaN(v))) {
+      errorEl.textContent = '❌ Marks must be valid numbers';
+      console.warn('Validation failed: non-numeric mark');
+      return;
+    }
+
+    if ([maths, science, english].some(v => v < 0 || v > 100)) {
+      errorEl.textContent = '❌ Marks must be between 0 and 100';
+      console.warn('Validation failed: mark out of range');
+      return;
+    }
+
+    // Build marks array
+    const marks = [maths, science, english];
+
+    // Use spread operator to get max & min
+    const maxMark = Math.max(...marks);
+    const minMark = Math.min(...marks);
+    const avg = marks.reduce((a, b) => a + b, 0) / marks.length;
+
+    // Display results (escape user text)
+    resultsEl.innerHTML = `
+      <h3>Results for ${escapeHtml(firstName)}</h3>
+      <p><strong>Marks:</strong> ${marks.join(', ')}</p>
+      <p><strong>Highest Mark:</strong> ${maxMark}</p>
+      <p><strong>Lowest Mark:</strong> ${minMark}</p>
+      <p><strong>Average:</strong> ${avg.toFixed(2)}</p>
+    `;
+
+    // Also log to console for debugging
+    console.log('Computed:', { firstName, marks, maxMark, minMark, avg });
+  });
+});
